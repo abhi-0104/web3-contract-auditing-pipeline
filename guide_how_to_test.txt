@@ -1,0 +1,86 @@
+=========================================================
+      MULTI-TENANT AI CODE REVIEWER - TESTING GUIDE
+=========================================================
+
+This application uses Groq (llama3-8b-8192 or openai/gpt-oss-120b) to act as an 
+AI code reviewer. It isolates past bugs based on the tenant (Tenant A or Tenant B).
+
+---------------------------------------------------------
+1. PREREQUISITES
+---------------------------------------------------------
+Before running the application, you must provide your Groq API Key. 
+We have set up a SECURE, restricted folder to store this.
+
+1. Open the file: `.secrets/.env`
+2. Add the following line with your real API key:
+   GROQ_API_KEY="your_actual_groq_api_key_here"
+
+---------------------------------------------------------
+2. HOW TO RUN
+---------------------------------------------------------
+Open your terminal, navigate to the project directory, activate the 
+virtual environment, and run the main script:
+
+cd "/Users/Stark0104/Desktop/Coding/PROJECTS/untitled folder"
+source .venv/bin/activate
+python main.py
+
+---------------------------------------------------------
+3. TEST SCENARIO: TENANT A (E-commerce Backend)
+---------------------------------------------------------
+Tenant A has a history of e-commerce bugs (like cart totals ignoring discounts 
+or inventory decrementing below zero).
+
+1. When prompted for tenant ID, type:
+   tenant_a
+
+2. When prompted for code, copy and paste this vulnerable snippet:
+
+def decrease_stock(product_id, quantity):
+    stock = db.get_stock(product_id)
+    db.update_stock(product_id, stock - quantity)
+
+3. Type `EOF` on a new line and press Enter.
+
+4. WHAT TO EXPECT:
+   The AI should retrieve similar past bugs (e.g., "Inventory decrement logic 
+   allows negative stock values") and flag this new code for not checking 
+   if `stock - quantity < 0`.
+
+---------------------------------------------------------
+4. TEST SCENARIO: TENANT B (Data Engineering)
+---------------------------------------------------------
+Tenant B has a history of data pipeline bugs (like reading whole S3 
+files into memory or parsing CSVs incorrectly).
+
+1. When prompted for tenant ID, type:
+   tenant_b
+
+2. When prompted for code, copy and paste this vulnerable snippet:
+
+def download_s3(bucket, key):
+    obj = s3.get_object(Bucket=bucket, Key=key)
+    data = obj['Body'].read()
+    return process(data)
+
+3. Type `EOF` on a new line and press Enter.
+
+4. WHAT TO EXPECT:
+   The AI should retrieve similar past bugs (e.g., "Reading large S3 files 
+   directly into memory causes OOM crash") and flag this snippet.
+
+---------------------------------------------------------
+5. TESTING THE HUMAN-IN-THE-LOOP FEEDBACK
+---------------------------------------------------------
+After the AI gives its review, it pauses and waits for your judgment.
+
+1. Type `TP` (True Positive) if the AI successfully caught a real bug.
+   Result: The `evaluation.csv` is updated to reflect another success.
+
+2. Type `FP` (False Positive) if the AI hallucinated or flagged safe code.
+   Result: The app will ask you to explain why the code is actually safe 
+   (e.g., "This function is safe because memory limits are enforced at the OS level").
+   The app will automatically update the vector database with this new 
+   correction so it won't make the same mistake next time!
+   
+You can verify the metrics by checking the `evaluation.csv` file in the directory.

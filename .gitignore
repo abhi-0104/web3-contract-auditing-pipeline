@@ -1,0 +1,19 @@
+# Secrets and environment variables
+.secrets/
+.env
+
+# Cache and compiled files
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Databases
+chroma_db/
+*.sqlite3
+
+# OS files
+.DS_Store
