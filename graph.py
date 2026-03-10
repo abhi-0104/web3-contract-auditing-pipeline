@@ -70,7 +70,18 @@ def retrieve_node(state: GraphState):
 
 def analyze_node(state: GraphState):
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are an expert AI Smart Contract Auditor for a specific Web3 company tenant. You must look for vulnerabilities in the uploaded solidity smart contract code, referencing past known bugs from this tenant. The historical bugs are provided in Token Oriented Object Notation (TOON) format."),
+        ("system", """You are an expert AI Smart Contract Auditor for a specific Web3 company tenant.
+You must look for vulnerabilities in the uploaded solidity smart contract code, referencing past known bugs from this tenant provided in TOON format.
+You MUST output your response as a valid JSON object matching this exact schema:
+{{
+    "cwe_class": "Reentrancy" | "Access Control" | "Oracle Manipulation" | "Frontrunning" | "Logic Flaw" | "Unchecked Call" | "Other",
+    "severity": "Info" | "Low" | "Medium" | "High" | "Critical",
+    "accuracy_score": 1-5,
+    "exploitability_score": 1-5,
+    "remediation_score": 1-5,
+    "verdict_rationale": "Detailed explanation of the vulnerability and why these scores were chosen."
+}}
+Do NOT output any other text or markdown formatting before or after the JSON."""),
         ("user", "Here are some past known bugs from our company for context in TOON format:\n\n{context}\n\nHere is the new smart contract code to review:\n\n{code}\n\nPlease analyze the new code for potential vulnerabilities, paying special attention to related issues from our past TOON bugs.")
     ])
     

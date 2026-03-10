@@ -14,6 +14,5 @@ env/
 # Databases
 chroma_db/
 *.sqlite3
-
 # OS files
 .DS_Store
